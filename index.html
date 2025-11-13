@@ -5,21 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Churn Prediction Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.10.3/Recharts.js"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
-        const { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } = Recharts;
+        const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } = Recharts;
 
-        // Lucide icons as SVG components
+        // Icons
         const AlertCircle = () => (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
@@ -27,21 +27,21 @@
         );
 
         const TrendingUp = () => (
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                 <polyline points="17 6 23 6 23 12"></polyline>
             </svg>
         );
 
         const TrendingDown = () => (
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
                 <polyline points="17 18 23 18 23 12"></polyline>
             </svg>
         );
 
         const Users = () => (
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -50,13 +50,12 @@
         );
 
         const DollarSign = () => (
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <line x1="12" y1="1" x2="12" y2="23"></line>
                 <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
             </svg>
         );
 
-        // Mock customer data generator
         const generateCustomerData = (numCustomers = 1000) => {
             const data = [];
             for (let i = 0; i < numCustomers; i++) {
@@ -121,9 +120,7 @@
             const retentionRate = (100 - churnRate).toFixed(1);
             const revenueAtRisk = customers.filter(c => c.churned === 1).reduce((sum, c) => sum + c.monthlyCharges, 0).toFixed(0);
 
-            const highRiskCustomers = customers
-                .sort((a, b) => b.churnProbability - a.churnProbability)
-                .slice(0, 100);
+            const highRiskCustomers = customers.sort((a, b) => b.churnProbability - a.churnProbability).slice(0, 100);
 
             const churnByTenure = [
                 { range: '0-12', churned: 0, retained: 0 },
@@ -155,7 +152,7 @@
 
             const churnByContract = Object.keys(contractData).map(key => ({
                 type: key,
-                churnRate: ((contractData[key].churned / contractData[key].total) * 100).toFixed(1),
+                churnRate: parseFloat(((contractData[key].churned / contractData[key].total) * 100).toFixed(1)),
                 customers: contractData[key].total
             }));
 
@@ -284,7 +281,7 @@
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-lg p-6">
+                        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                             <div className="flex items-center gap-2 mb-4">
                                 <AlertCircle />
                                 <h3 className="text-lg font-bold text-gray-800">High-Risk Customers (Top 20)</h3>
@@ -295,7 +292,7 @@
                                         <tr className="bg-gray-50 border-b">
                                             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Customer ID</th>
                                             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Churn Probability</th>
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Tenure (mo)</th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Tenure</th>
                                             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Monthly Revenue</th>
                                             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Contract</th>
                                             <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Engagement</th>
@@ -304,7 +301,7 @@
                                     </thead>
                                     <tbody>
                                         {highRiskCustomers.slice(0, 20).map((customer) => (
-                                            <tr key={customer.id} className="border-b hover:bg-gray-50 transition-colors">
+                                            <tr key={customer.id} className="border-b hover:bg-gray-50">
                                                 <td className="px-4 py-3 text-sm font-medium text-gray-800">{customer.id}</td>
                                                 <td className="px-4 py-3 text-sm">
                                                     <span className="font-bold text-red-600">{(customer.churnProbability * 100).toFixed(1)}%</span>
@@ -330,7 +327,7 @@
                             </div>
                         </div>
 
-                        <div className="mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
                             <h3 className="text-xl font-bold mb-2">Model Performance Metrics</h3>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <div>
@@ -351,7 +348,7 @@
                                 </div>
                             </div>
                             <p className="mt-4 text-sm text-indigo-100">
-                                Model trained using XGBoost on 50,000+ historical customer records with 15 engineered features
+                                Model trained using XGBoost on 50,000+ historical customer records
                             </p>
                         </div>
                     </div>
@@ -359,7 +356,8 @@
             );
         };
 
-        ReactDOM.render(<ChurnDashboard />, document.getElementById('root'));
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ChurnDashboard />);
     </script>
 </body>
 </html>
