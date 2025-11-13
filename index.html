@@ -5,63 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Churn Prediction Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div class="min-h-screen p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">Customer Churn Prediction Dashboard</h1>
+                <p class="text-gray-600">ML-powered insights for proactive retention strategies</p>
+            </div>
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } = Recharts;
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                    <p class="text-gray-500 text-sm font-medium">Total Customers</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="totalCustomers">-</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                    <p class="text-gray-500 text-sm font-medium">Retention Rate</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="retentionRate">-</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
+                    <p class="text-gray-500 text-sm font-medium">Churn Rate</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="churnRate">-</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+                    <p class="text-gray-500 text-sm font-medium">Revenue at Risk</p>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="revenueAtRisk">-</p>
+                </div>
+            </div>
 
-        // Icons
-        const AlertCircle = () => (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-        );
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Churn Rate by Customer Tenure</h3>
+                    <canvas id="tenureChart" height="300"></canvas>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Churn Rate by Contract Type</h3>
+                    <canvas id="contractChart" height="300"></canvas>
+                </div>
+            </div>
 
-        const TrendingUp = () => (
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                <polyline points="17 6 23 6 23 12"></polyline>
-            </svg>
-        );
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Top Churn Drivers (Feature Importance)</h3>
+                    <canvas id="featureChart" height="300"></canvas>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Churn Distribution</h3>
+                    <canvas id="pieChart" height="300"></canvas>
+                </div>
+            </div>
 
-        const TrendingDown = () => (
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
-                <polyline points="17 18 23 18 23 12"></polyline>
-            </svg>
-        );
+            <!-- High Risk Customers Table -->
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">🚨 High-Risk Customers (Top 20)</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-50 border-b">
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Customer ID</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Churn Probability</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Tenure (mo)</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Monthly Revenue</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Contract</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Engagement</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Risk Level</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customerTable"></tbody>
+                    </table>
+                </div>
+            </div>
 
-        const Users = () => (
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-        );
+            <!-- Model Performance -->
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+                <h3 class="text-xl font-bold mb-2">Model Performance Metrics</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <p class="text-indigo-200 text-sm">Accuracy</p>
+                        <p class="text-2xl font-bold">85.3%</p>
+                    </div>
+                    <div>
+                        <p class="text-indigo-200 text-sm">Precision</p>
+                        <p class="text-2xl font-bold">82.1%</p>
+                    </div>
+                    <div>
+                        <p class="text-indigo-200 text-sm">Recall</p>
+                        <p class="text-2xl font-bold">79.8%</p>
+                    </div>
+                    <div>
+                        <p class="text-indigo-200 text-sm">F1-Score</p>
+                        <p class="text-2xl font-bold">80.9%</p>
+                    </div>
+                </div>
+                <p class="mt-4 text-sm text-indigo-100">
+                    Model trained using XGBoost on 50,000+ historical customer records
+                </p>
+            </div>
+        </div>
+    </div>
 
-        const DollarSign = () => (
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="12" y1="1" x2="12" y2="23"></line>
-                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-            </svg>
-        );
-
-        const generateCustomerData = (numCustomers = 1000) => {
+    <script>
+        // Generate customer data
+        function generateCustomerData(numCustomers = 1000) {
             const data = [];
             for (let i = 0; i < numCustomers; i++) {
                 const tenure = Math.floor(Math.random() * 72) + 1;
                 const monthlyCharges = Math.random() * 80 + 20;
-                const totalCharges = tenure * monthlyCharges * (0.9 + Math.random() * 0.2);
                 const engagementScore = Math.random() * 100;
                 const supportTickets = Math.floor(Math.random() * 10);
                 const contractType = ['Month-to-month', 'One year', 'Two year'][Math.floor(Math.random() * 3)];
@@ -80,7 +134,6 @@
                     id: `CUST${String(i + 1).padStart(4, '0')}`,
                     tenure,
                     monthlyCharges: parseFloat(monthlyCharges.toFixed(2)),
-                    totalCharges: parseFloat(totalCharges.toFixed(2)),
                     engagementScore: parseFloat(engagementScore.toFixed(1)),
                     supportTickets,
                     contractType,
@@ -90,274 +143,178 @@
                 });
             }
             return data;
-        };
+        }
 
-        const ChurnDashboard = () => {
-            const [customers, setCustomers] = useState([]);
-            const [loading, setLoading] = useState(true);
+        // Initialize data
+        const customers = generateCustomerData(1000);
 
-            useEffect(() => {
-                setTimeout(() => {
-                    setCustomers(generateCustomerData(1000));
-                    setLoading(false);
-                }, 500);
-            }, []);
+        // Calculate KPIs
+        const totalCustomers = customers.length;
+        const churnedCustomers = customers.filter(c => c.churned === 1).length;
+        const churnRate = ((churnedCustomers / totalCustomers) * 100).toFixed(1);
+        const retentionRate = (100 - churnRate).toFixed(1);
+        const revenueAtRisk = customers.filter(c => c.churned === 1).reduce((sum, c) => sum + c.monthlyCharges, 0).toFixed(0);
 
-            if (loading) {
-                return (
-                    <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-                        <div className="text-center">
-                            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto"></div>
-                            <p className="mt-4 text-gray-600 font-medium">Loading dashboard...</p>
-                        </div>
-                    </div>
-                );
-            }
+        // Update KPIs
+        document.getElementById('totalCustomers').textContent = totalCustomers;
+        document.getElementById('retentionRate').textContent = retentionRate + '%';
+        document.getElementById('churnRate').textContent = churnRate + '%';
+        document.getElementById('revenueAtRisk').textContent = '$' + revenueAtRisk;
 
-            const totalCustomers = customers.length;
-            const churnedCustomers = customers.filter(c => c.churned === 1).length;
-            const churnRate = ((churnedCustomers / totalCustomers) * 100).toFixed(1);
-            const retentionRate = (100 - churnRate).toFixed(1);
-            const revenueAtRisk = customers.filter(c => c.churned === 1).reduce((sum, c) => sum + c.monthlyCharges, 0).toFixed(0);
+        // Churn by Tenure
+        const churnByTenure = [
+            { range: '0-12', churned: 0, retained: 0 },
+            { range: '13-24', churned: 0, retained: 0 },
+            { range: '25-36', churned: 0, retained: 0 },
+            { range: '37-48', churned: 0, retained: 0 },
+            { range: '49+', churned: 0, retained: 0 }
+        ];
 
-            const highRiskCustomers = customers.sort((a, b) => b.churnProbability - a.churnProbability).slice(0, 100);
+        customers.forEach(c => {
+            let idx = 4;
+            if (c.tenure <= 12) idx = 0;
+            else if (c.tenure <= 24) idx = 1;
+            else if (c.tenure <= 36) idx = 2;
+            else if (c.tenure <= 48) idx = 3;
+            
+            if (c.churned === 1) churnByTenure[idx].churned++;
+            else churnByTenure[idx].retained++;
+        });
 
-            const churnByTenure = [
-                { range: '0-12', churned: 0, retained: 0 },
-                { range: '13-24', churned: 0, retained: 0 },
-                { range: '25-36', churned: 0, retained: 0 },
-                { range: '37-48', churned: 0, retained: 0 },
-                { range: '49+', churned: 0, retained: 0 }
-            ];
-
-            customers.forEach(c => {
-                let idx = 4;
-                if (c.tenure <= 12) idx = 0;
-                else if (c.tenure <= 24) idx = 1;
-                else if (c.tenure <= 36) idx = 2;
-                else if (c.tenure <= 48) idx = 3;
-                
-                if (c.churned === 1) churnByTenure[idx].churned++;
-                else churnByTenure[idx].retained++;
-            });
-
-            const contractData = {};
-            customers.forEach(c => {
-                if (!contractData[c.contractType]) {
-                    contractData[c.contractType] = { churned: 0, total: 0 };
+        new Chart(document.getElementById('tenureChart'), {
+            type: 'bar',
+            data: {
+                labels: churnByTenure.map(d => d.range),
+                datasets: [
+                    {
+                        label: 'Churned',
+                        data: churnByTenure.map(d => d.churned),
+                        backgroundColor: '#ef4444'
+                    },
+                    {
+                        label: 'Retained',
+                        data: churnByTenure.map(d => d.retained),
+                        backgroundColor: '#10b981'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
                 }
-                contractData[c.contractType].total++;
-                if (c.churned === 1) contractData[c.contractType].churned++;
-            });
+            }
+        });
 
-            const churnByContract = Object.keys(contractData).map(key => ({
-                type: key,
-                churnRate: parseFloat(((contractData[key].churned / contractData[key].total) * 100).toFixed(1)),
-                customers: contractData[key].total
-            }));
+        // Churn by Contract
+        const contractData = {};
+        customers.forEach(c => {
+            if (!contractData[c.contractType]) {
+                contractData[c.contractType] = { churned: 0, total: 0 };
+            }
+            contractData[c.contractType].total++;
+            if (c.churned === 1) contractData[c.contractType].churned++;
+        });
 
-            const featureImportance = [
-                { feature: 'Tenure', importance: 0.28 },
-                { feature: 'Contract Type', importance: 0.22 },
-                { feature: 'Engagement Score', importance: 0.18 },
-                { feature: 'Support Tickets', importance: 0.15 },
-                { feature: 'Monthly Charges', importance: 0.10 },
-                { feature: 'Payment Method', importance: 0.07 }
-            ];
+        const churnByContract = Object.keys(contractData).map(key => ({
+            type: key,
+            churnRate: ((contractData[key].churned / contractData[key].total) * 100).toFixed(1)
+        }));
 
-            const scatterData = customers.slice(0, 200).map(c => ({
-                engagement: c.engagementScore,
-                tenure: c.tenure,
-                churned: c.churned
-            }));
+        new Chart(document.getElementById('contractChart'), {
+            type: 'bar',
+            data: {
+                labels: churnByContract.map(d => d.type),
+                datasets: [{
+                    label: 'Churn Rate %',
+                    data: churnByContract.map(d => d.churnRate),
+                    backgroundColor: '#8b5cf6'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 50 }
+                }
+            }
+        });
 
-            return (
-                <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="mb-8">
-                            <h1 className="text-4xl font-bold text-gray-800 mb-2">Customer Churn Prediction Dashboard</h1>
-                            <p className="text-gray-600">ML-powered insights for proactive retention strategies</p>
-                        </div>
+        // Feature Importance
+        const featureImportance = [
+            { feature: 'Tenure', importance: 28 },
+            { feature: 'Contract Type', importance: 22 },
+            { feature: 'Engagement', importance: 18 },
+            { feature: 'Support Tickets', importance: 15 },
+            { feature: 'Monthly Charges', importance: 10 },
+            { feature: 'Payment Method', importance: 7 }
+        ];
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-500 text-sm font-medium">Total Customers</p>
-                                        <p className="text-3xl font-bold text-gray-800 mt-1">{totalCustomers}</p>
-                                    </div>
-                                    <Users />
-                                </div>
-                            </div>
+        new Chart(document.getElementById('featureChart'), {
+            type: 'bar',
+            data: {
+                labels: featureImportance.map(d => d.feature),
+                datasets: [{
+                    label: 'Importance %',
+                    data: featureImportance.map(d => d.importance),
+                    backgroundColor: '#3b82f6'
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { beginAtZero: true, max: 30 }
+                }
+            }
+        });
 
-                            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-500 text-sm font-medium">Retention Rate</p>
-                                        <p className="text-3xl font-bold text-gray-800 mt-1">{retentionRate}%</p>
-                                    </div>
-                                    <TrendingUp />
-                                </div>
-                            </div>
+        // Pie Chart
+        new Chart(document.getElementById('pieChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Retained', 'Churned'],
+                datasets: [{
+                    data: [totalCustomers - churnedCustomers, churnedCustomers],
+                    backgroundColor: ['#10b981', '#ef4444']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
 
-                            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-500 text-sm font-medium">Churn Rate</p>
-                                        <p className="text-3xl font-bold text-gray-800 mt-1">{churnRate}%</p>
-                                    </div>
-                                    <TrendingDown />
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-gray-500 text-sm font-medium">Revenue at Risk</p>
-                                        <p className="text-3xl font-bold text-gray-800 mt-1">${revenueAtRisk}</p>
-                                    </div>
-                                    <DollarSign />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            <div className="bg-white rounded-xl shadow-lg p-6">
-                                <h3 className="text-lg font-bold text-gray-800 mb-4">Churn Rate by Customer Tenure</h3>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={churnByTenure}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="range" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Legend />
-                                        <Bar dataKey="churned" fill="#ef4444" name="Churned" />
-                                        <Bar dataKey="retained" fill="#10b981" name="Retained" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-
-                            <div className="bg-white rounded-xl shadow-lg p-6">
-                                <h3 className="text-lg font-bold text-gray-800 mb-4">Churn Rate by Contract Type</h3>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={churnByContract}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="type" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Bar dataKey="churnRate" fill="#8b5cf6" name="Churn Rate %" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                            <div className="bg-white rounded-xl shadow-lg p-6">
-                                <h3 className="text-lg font-bold text-gray-800 mb-4">Top Churn Drivers (Feature Importance)</h3>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={featureImportance} layout="vertical">
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis type="number" domain={[0, 0.3]} />
-                                        <YAxis type="category" dataKey="feature" width={120} />
-                                        <Tooltip formatter={(value) => (value * 100).toFixed(1) + '%'} />
-                                        <Bar dataKey="importance" fill="#3b82f6" />
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </div>
-
-                            <div className="bg-white rounded-xl shadow-lg p-6">
-                                <h3 className="text-lg font-bold text-gray-800 mb-4">Engagement Score vs Tenure</h3>
-                                <ResponsiveContainer width="100%" height={300}>
-                                    <ScatterChart>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="tenure" name="Tenure" />
-                                        <YAxis dataKey="engagement" name="Engagement" />
-                                        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                                        <Legend />
-                                        <Scatter name="Retained" data={scatterData.filter(d => d.churned === 0)} fill="#10b981" />
-                                        <Scatter name="Churned" data={scatterData.filter(d => d.churned === 1)} fill="#ef4444" />
-                                    </ScatterChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-                            <div className="flex items-center gap-2 mb-4">
-                                <AlertCircle />
-                                <h3 className="text-lg font-bold text-gray-800">High-Risk Customers (Top 20)</h3>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="bg-gray-50 border-b">
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Customer ID</th>
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Churn Probability</th>
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Tenure</th>
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Monthly Revenue</th>
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Contract</th>
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Engagement</th>
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600">Risk Level</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {highRiskCustomers.slice(0, 20).map((customer) => (
-                                            <tr key={customer.id} className="border-b hover:bg-gray-50">
-                                                <td className="px-4 py-3 text-sm font-medium text-gray-800">{customer.id}</td>
-                                                <td className="px-4 py-3 text-sm">
-                                                    <span className="font-bold text-red-600">{(customer.churnProbability * 100).toFixed(1)}%</span>
-                                                </td>
-                                                <td className="px-4 py-3 text-sm text-gray-600">{customer.tenure}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-600">${customer.monthlyCharges}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-600">{customer.contractType}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-600">{customer.engagementScore.toFixed(0)}</td>
-                                                <td className="px-4 py-3 text-sm">
-                                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                                        customer.churnProbability > 0.7 ? 'bg-red-100 text-red-700' :
-                                                        customer.churnProbability > 0.5 ? 'bg-orange-100 text-orange-700' :
-                                                        'bg-yellow-100 text-yellow-700'
-                                                    }`}>
-                                                        {customer.churnProbability > 0.7 ? 'Critical' :
-                                                         customer.churnProbability > 0.5 ? 'High' : 'Medium'}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
-                            <h3 className="text-xl font-bold mb-2">Model Performance Metrics</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div>
-                                    <p className="text-indigo-200 text-sm">Accuracy</p>
-                                    <p className="text-2xl font-bold">85.3%</p>
-                                </div>
-                                <div>
-                                    <p className="text-indigo-200 text-sm">Precision</p>
-                                    <p className="text-2xl font-bold">82.1%</p>
-                                </div>
-                                <div>
-                                    <p className="text-indigo-200 text-sm">Recall</p>
-                                    <p className="text-2xl font-bold">79.8%</p>
-                                </div>
-                                <div>
-                                    <p className="text-indigo-200 text-sm">F1-Score</p>
-                                    <p className="text-2xl font-bold">80.9%</p>
-                                </div>
-                            </div>
-                            <p className="mt-4 text-sm text-indigo-100">
-                                Model trained using XGBoost on 50,000+ historical customer records
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<ChurnDashboard />);
+        // High Risk Customers Table
+        const highRisk = customers.sort((a, b) => b.churnProbability - a.churnProbability).slice(0, 20);
+        const tableBody = document.getElementById('customerTable');
+        
+        highRisk.forEach(customer => {
+            const riskLevel = customer.churnProbability > 0.7 ? 'Critical' : 
+                            customer.churnProbability > 0.5 ? 'High' : 'Medium';
+            const riskClass = customer.churnProbability > 0.7 ? 'bg-red-100 text-red-700' :
+                            customer.churnProbability > 0.5 ? 'bg-orange-100 text-orange-700' :
+                            'bg-yellow-100 text-yellow-700';
+            
+            const row = `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-3 text-sm font-medium text-gray-800">${customer.id}</td>
+                    <td class="px-4 py-3 text-sm"><span class="font-bold text-red-600">${(customer.churnProbability * 100).toFixed(1)}%</span></td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${customer.tenure}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">$${customer.monthlyCharges}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${customer.contractType}</td>
+                    <td class="px-4 py-3 text-sm text-gray-600">${customer.engagementScore.toFixed(0)}</td>
+                    <td class="px-4 py-3 text-sm">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${riskClass}">
+                            ${riskLevel}
+                        </span>
+                    </td>
+                </tr>
+            `;
+            tableBody.innerHTML += row;
+        });
     </script>
 </body>
 </html>
